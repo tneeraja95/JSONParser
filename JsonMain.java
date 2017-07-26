@@ -4,11 +4,13 @@ import java.io.IOException;
 class JsonParser{
 	int i;
 	String s;
+
 	void eliminateSpace(){
 		while( i<s.length() && s.charAt(i)==' '){
 			i++;
 		}	
 	}
+
 	boolean Match(char c){
 		if(s.charAt(i)==c){
 			i++;
@@ -16,16 +18,19 @@ class JsonParser{
 		}
 		return false;
 	}
+
 	boolean Object(){
 		if(s.charAt(i)=='{'){
 			if(Match('{')){
 				eliminateSpace();
 				if(s.charAt(i)=='}'){
 					Match('}');
+					eliminateSpace();
 					return true;
 				}		
 				else{
 					if(Members()){
+						eliminateSpace();
 						return(Match('}'));
 					}
 				}			
@@ -39,6 +44,7 @@ class JsonParser{
 			eliminateSpace();
 			if(s.charAt(i)==',') {
 				Match(',');
+				eliminateSpace();
 				return Members(); 	
 			}
 			else
@@ -58,6 +64,7 @@ class JsonParser{
 		
 		return false;
 	}
+
 	boolean Value(){
 		eliminateSpace();
 		if(s.charAt(i)=='"')
@@ -76,6 +83,7 @@ class JsonParser{
 			return Null();				
 		return false;
 	}
+
 	boolean string(){
 		if(Match('"')){
 			if(Chars())
@@ -92,6 +100,7 @@ class JsonParser{
 			return Chars();
 		return false;	
 	}
+
 	boolean Character(){
 			i++;
 			return true;	
@@ -105,6 +114,7 @@ class JsonParser{
 			return Digits();
 		return false;		
 	}
+
 	boolean Digit(){
 		if(s.charAt(i)>='0' && s.charAt(i)<='9'){
 				i++;
@@ -146,8 +156,7 @@ class JsonParser{
 		return false;
 	}
 
-	boolean Null(){
-	
+	boolean Null(){	
 		if(s.charAt(i)=='n'){
 				i++;
 			if(s.charAt(i)!='u')
@@ -163,9 +172,11 @@ class JsonParser{
 		}
 		return false;
 	}
+
 	boolean Array(){
 		if(s.charAt(i)=='['){
 			Match('[');
+			eliminateSpace();
 			if(s.charAt(i)==']')
 				return(Match(']'));
 			else
@@ -180,6 +191,7 @@ class JsonParser{
 			eliminateSpace();	
 			if(s.charAt(i)==','){
 				Match(',');
+				eliminateSpace();
 				return Elements();
 			}
 			else
@@ -188,6 +200,7 @@ class JsonParser{
 		}	
 		return false;	
 	}
+
 	public void Validator(String s){
 		i=0;
 		this.s=s;
@@ -209,7 +222,9 @@ class JsonParser{
 			System.out.println("String is valid");
 	}	
 }
+
 class JsonMain{
+
 	public static void main(String[] args) throws IOException{
 			JsonParser JP = new JsonParser();
 			BufferedReader br = null;
