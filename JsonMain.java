@@ -1,12 +1,11 @@
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
 class JsonParser{
 	int i;
 	String s;
 	void eliminateSpace(){
-		System.out.println("in eliminate space i="+i+" length="+s.length());
-		
 		while( i<s.length() && s.charAt(i)==' '){
-			System.out.println("in while i="+i);
 			i++;
 		}	
 	}
@@ -26,9 +25,7 @@ class JsonParser{
 					return true;
 				}		
 				else{
-					System.out.println("inside else");
 					if(Members()){
-						System.out.println("inside Object members");
 						return(Match('}'));
 					}
 				}			
@@ -38,7 +35,6 @@ class JsonParser{
 	}
 	
 	boolean Members(){
-					System.out.println("inside members");
 		if(Pair()){
 			eliminateSpace();
 			if(s.charAt(i)==',') {
@@ -52,12 +48,9 @@ class JsonParser{
 	}
 	
 	boolean Pair(){
-					System.out.println("inside pair");
 		if(string()){
-					System.out.println("inside pair string"+s.charAt(i));
 			eliminateSpace();		
 			if(s.charAt(i)==':'){
-					System.out.println("inside pair :");
 				if(Match(':'))
 					return Value();
 			}			
@@ -84,7 +77,6 @@ class JsonParser{
 		return false;
 	}
 	boolean string(){
-		System.out.println("Inside Strings");
 		if(Match('"')){
 			if(Chars())
 				return Match('"');
@@ -93,7 +85,6 @@ class JsonParser{
 	}
 	
 	boolean Chars(){
-				System.out.println("inside chars");
 		eliminateSpace();
 		if(s.charAt(i)=='"')
 			return true;
@@ -107,7 +98,6 @@ class JsonParser{
 	}
 	
 	boolean Digits(){
-	System.out.println("Inside digits");
 	eliminateSpace();
 		if(s.charAt(i)=='}'|| s.charAt(i)==',')
 			return true;
@@ -116,7 +106,6 @@ class JsonParser{
 		return false;		
 	}
 	boolean Digit(){
-		System.out.println("Inside digit");
 		if(s.charAt(i)>='0' && s.charAt(i)<='9'){
 				i++;
 				return true;
@@ -125,8 +114,6 @@ class JsonParser{
 	}
 	
 	boolean Bool(){
-		System.out.println("Inside bool");
-
 		if(s.charAt(i)=='t'){
 			i++;
 			if(s.charAt(i)!='r')
@@ -178,7 +165,6 @@ class JsonParser{
 	}
 	boolean Array(){
 		if(s.charAt(i)=='['){
-			System.out.println("Inside array if");
 			Match('[');
 			if(s.charAt(i)==']')
 				return(Match(']'));
@@ -190,16 +176,17 @@ class JsonParser{
 	}
 	
 	boolean Elements(){
-		boolean flag;
-		flag=Value();
-		if(flag==false)
-			return flag;
-		eliminateSpace();	
-		if(s.charAt(i)==','){
-			Match(',');
-			return Elements();
-		}
-		return flag;	
+		if(Value()){
+			eliminateSpace();	
+			if(s.charAt(i)==','){
+				Match(',');
+				return Elements();
+			}
+			else
+				return true;	
+			
+		}	
+		return false;	
 	}
 	public void Validator(String s){
 		i=0;
@@ -215,7 +202,6 @@ class JsonParser{
 				flag=true;
 		}	
 		if(flag==true)
-		System.out.println("returned true i="+i+" length="+s.length());
 		eliminateSpace();
 		if(i<s.length() || flag==false)
 			System.out.println("String is not valid");	
@@ -224,9 +210,19 @@ class JsonParser{
 	}	
 }
 class JsonMain{
-	public static void main(String[] args){
+	public static void main(String[] args) throws IOException{
 			JsonParser JP = new JsonParser();
-		//	JP.Validator(" {\"glossary\": {\"title\": \"example glossary\",\"GlossDiv\": {\"title\": \"S\",\"GlossList\": {\"GlossEntry\": { \"ID\": \"SGML\",\"SortAs\": \"SGML\",\"GlossTerm\": \"Standard Generalized Markup Language\",\"Acronym\": \"SGML\",\"Abbrev\": \"ISO 8879:1986\",\"GlossDef\": {\"para\": \"A meta-markup language, used to create markup languages such as DocBook.\",\"GlossSeeAlso\": [\"GML\", \"XML\"]},\"GlossSee\": \"markup\"}}}}}");		
-	JP.Validator("{    \"AAA\": []}     ");
-	}	
+			BufferedReader br = null;
+			try{
+			br = new BufferedReader(new FileReader(args[0]));;
+			String input = br.readLine();
+			JP.Validator(input);
+			}catch(IOException e){
+				e.printStackTrace();	
+			}finally {
+				if(br != null)
+					br.close();
+			}
+	}		
+		
 }
