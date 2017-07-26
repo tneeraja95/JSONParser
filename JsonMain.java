@@ -16,6 +16,7 @@ class JsonParser{
 			i++;
 			return true;
 		}
+		
 		return false;
 	}
 
@@ -23,13 +24,13 @@ class JsonParser{
 		if(s.charAt(i)=='{'){
 			if(Match('{')){
 				eliminateSpace();
-				if(s.charAt(i)=='}'){
+				if(i<s.length() && s.charAt(i)=='}'){
 					Match('}');
 					eliminateSpace();
 					return true;
 				}		
 				else{
-					if(Members()){
+					if(i<s.length() && Members()){
 						eliminateSpace();
 						return(Match('}'));
 					}
@@ -40,12 +41,13 @@ class JsonParser{
 	}
 	
 	boolean Members(){
-		if(Pair()){
+		if(i<s.length() && Pair()){
 			eliminateSpace();
-			if(s.charAt(i)==',') {
-				Match(',');
-				eliminateSpace();
-				return Members(); 	
+			if(i<s.length() && s.charAt(i)==',') {
+				if(Match(',')){
+					eliminateSpace();
+					return Members();
+				} 	
 			}
 			else
 				return true;
@@ -56,7 +58,7 @@ class JsonParser{
 	boolean Pair(){
 		if(string()){
 			eliminateSpace();		
-			if(s.charAt(i)==':'){
+			if(i<s.length() && s.charAt(i)==':'){
 				if(Match(':'))
 					return Value();
 			}			
@@ -67,19 +69,19 @@ class JsonParser{
 
 	boolean Value(){
 		eliminateSpace();
-		if(s.charAt(i)=='"')
+		if(i<s.length() && s.charAt(i)=='"')
 			return string();
-		else if(s.charAt(i)>='0' && s.charAt(i)<='9'){
+		else if(i<s.length() && s.charAt(i)>='0' && s.charAt(i)<='9'){
 			return Digits();
 		}
-		else if(s.charAt(i)=='t' || s.charAt(i)=='f'){
+		else if(i<s.length() && s.charAt(i)=='t' || s.charAt(i)=='f'){
 			return Bool();
 		}
-		else if(s.charAt(i)=='[')
+		else if(i<s.length() && s.charAt(i)=='[')
 			return Array();
-		else if(s.charAt(i)=='{')
+		else if(i<s.length() && s.charAt(i)=='{')
 			return Object();
-		else if(s.charAt(i)=='n')
+		else if(i<s.length() && s.charAt(i)=='n')
 			return Null();				
 		return false;
 	}
@@ -94,9 +96,9 @@ class JsonParser{
 	
 	boolean Chars(){
 		eliminateSpace();
-		if(s.charAt(i)=='"')
+		if(i<s.length() && s.charAt(i)=='"')
 			return true;
-		if(Character())
+		if(i<s.length() && Character())
 			return Chars();
 		return false;	
 	}
@@ -108,9 +110,9 @@ class JsonParser{
 	
 	boolean Digits(){
 	eliminateSpace();
-		if(s.charAt(i)=='}'|| s.charAt(i)==',')
+		if(i<s.length() && (s.charAt(i)=='}'|| s.charAt(i)==','))
 			return true;
-		if(Digit())
+		if(i<s.length() && Digit())
 			return Digits();
 		return false;		
 	}
@@ -174,10 +176,10 @@ class JsonParser{
 	}
 
 	boolean Array(){
-		if(s.charAt(i)=='['){
+		if(i<s.length() && s.charAt(i)=='['){
 			Match('[');
 			eliminateSpace();
-			if(s.charAt(i)==']')
+			if(i<s.length() && s.charAt(i)==']')
 				return(Match(']'));
 			else
 				if(Elements())
@@ -187,9 +189,9 @@ class JsonParser{
 	}
 	
 	boolean Elements(){
-		if(Value()){
+		if(i<s.length() && Value()){
 			eliminateSpace();	
-			if(s.charAt(i)==','){
+			if(i<s.length() && s.charAt(i)==','){
 				Match(',');
 				eliminateSpace();
 				return Elements();
@@ -205,21 +207,26 @@ class JsonParser{
 		i=0;
 		this.s=s;
 		boolean flag=false;
-		eliminateSpace();
-		if(s.charAt(i)=='{'){
-			if(Object())
-				flag=true;
-			}
-		else if(s.charAt(i)=='['){
-			if(Array())
-				flag=true;
+		if(s==null){
+			System.out.println("Not a valid JSON Object");
 		}	
-		if(flag==true)
-		eliminateSpace();
-		if(i<s.length() || flag==false)
-			System.out.println("String is not valid");	
-		else 
-			System.out.println("String is valid");
+		else{	
+			eliminateSpace();
+			if(i<s.length() && s.charAt(i)=='{'){
+				if(Object())
+					flag=true;
+				}
+			else if(i<s.length() && s.charAt(i)=='['){
+				if(Array())
+						flag=true;
+			}		
+			if(flag==true)
+				eliminateSpace();
+			if(i<s.length() || flag==false)
+				System.out.println("Not a Valid JSON Object");	
+			else 
+				System.out.println("Valid JSON Object");
+		}
 	}	
 }
 
