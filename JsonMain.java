@@ -12,7 +12,7 @@ class JsonParser{
 	}
 
 	boolean Match(char c){
-		if(s.charAt(i)==c){
+		if(i<s.length() && (s.charAt(i)==c)){
 			i++;
 			return true;
 		}
