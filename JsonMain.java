@@ -1,6 +1,42 @@
 import java.io.BufferedReader;
 import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
+enum enumException{
+	Undefined_Symbol,
+	Matching_Curly_Bracket_Not_Found,
+	Not_a_Key,
+	Missing_Colon,
+	Not_a_Value,
+	Matching_Box_Bracket_Not_Found,
+	Unexpected_End_of_Line,
+	Digit_Expected,
+	Starting_Bracket_Not_Found
+}
+
+class customException extends Exception{
+	customException(enumException e, int i){
+	i=i+1;
+	switch(e){
+		case Matching_Curly_Bracket_Not_Found:System.out.println("Error : Matching Bracket '}' not found at Position "+i);
+												break;
+		case Not_a_Key:System.out.println("Error : Not a Valid Key at Position "+i);
+												break;
+		case Missing_Colon:System.out.println("Error : Missing Colon ':' at Position "+i);
+												break;
+		case Not_a_Value:System.out.println("Error : Not a Valid Value at Position "+i);
+												break;
+		case Matching_Box_Bracket_Not_Found:System.out.println("Error : Matching Bracket ']' not found at Position "+i );
+												break;
+		case Undefined_Symbol:System.out.println("Error : Undefined Symbol at Position "+i);
+												break;
+		case Unexpected_End_of_Line:System.out.println("Error: Unexpected end of file");
+												break;
+		case Digit_Expected:System.out.println("Error: Digit Expected "+i);										
+												break;
+		case Starting_Bracket_Not_Found:System.out.println("Error: Starting Bracket not found '[' or '{' expected  at Position "+i);
+		}
+	}
+}
 class JsonParser{
 	int i;
 	String s;
@@ -20,10 +56,13 @@ class JsonParser{
 		return false;
 	}
 
-	boolean Object(){
+	boolean Object() throws customException {
+		enumException e = enumException.Matching_Curly_Bracket_Not_Found;
 		if(s.charAt(i)=='{'){
 			if(Match('{')){
 				eliminateSpace();
+				if(i==s.length())
+					throw new customException(e,i);
 				if(i<s.length() && s.charAt(i)=='}'){
 					Match('}');
 					eliminateSpace();
@@ -32,15 +71,23 @@ class JsonParser{
 				else{
 					if(i<s.length() && Members()){
 						eliminateSpace();
-						return(Match('}'));
+						if(Match('}'))
+							return true;
+						else{
+							
+							throw new customException(e,i);
+						}
 					}
-				}			
+				}
+				throw new customException(e,i);
+							
 			}	 	
 		}
+		
 		return false;
 	}
 	
-	boolean Members(){
+	boolean Members()throws customException{
 		if(i<s.length() && Pair()){
 			eliminateSpace();
 			if(i<s.length() && s.charAt(i)==',') {
@@ -55,19 +102,23 @@ class JsonParser{
 		return false;
 	}
 	
-	boolean Pair(){
+	boolean Pair()throws customException{
 		if(string()){
 			eliminateSpace();		
 			if(i<s.length() && s.charAt(i)==':'){
 				if(Match(':'))
 					return Value();
-			}			
-		}	
-		
-		return false;
+				}	
+			else{
+				enumException e = enumException.Missing_Colon;	
+				throw new customException(e,i);
+			}	
+		}
+		enumException e = enumException.Not_a_Key;	
+		throw new customException(e,i);		
 	}
 
-	boolean Value(){
+	boolean Value()throws customException{
 		eliminateSpace();
 		if(i<s.length() && s.charAt(i)=='"')
 			return string();
@@ -82,15 +133,19 @@ class JsonParser{
 		else if(i<s.length() && s.charAt(i)=='{')
 			return Object();
 		else if(i<s.length() && s.charAt(i)=='n')
-			return Null();				
-		return false;
+			return Null();	
+		enumException e = enumException.Not_a_Value;
+		throw new customException(e,i); 	
+		
 	}
 
-	boolean string(){
+	boolean string()throws customException{
 		if(Match('"')){
-			if(Chars())
-				return Match('"');
+			if(Chars()){	
+				if( Match('"'))
+					return true;				
 			}		
+		}
 		return false;
 	}
 	
@@ -108,7 +163,7 @@ class JsonParser{
 			return true;	
 	}
 	
-	boolean Digits(){
+	boolean Digits()throws customException{
 	eliminateSpace();
 		if(i<s.length() && (s.charAt(i)=='}'|| s.charAt(i)==','))
 			return true;
@@ -117,65 +172,72 @@ class JsonParser{
 		return false;		
 	}
 
-	boolean Digit(){
+	boolean Digit()throws customException{
 		if(s.charAt(i)>='0' && s.charAt(i)<='9'){
 				i++;
 				return true;
 		}
-		return false;
+		enumException e = enumException.Digit_Expected;
+		throw new customException(e,i);
+		
 	}
 	
-	boolean Bool(){
+	boolean Bool() throws customException {
 		if(s.charAt(i)=='t'){
 			i++;
-			if(s.charAt(i)!='r')
-				return false;
-			i++;	
-			if(s.charAt(i)!='u')
-				return false;
-			i++;				
-			if(s.charAt(i)!='e')
-				return false;
-			i++;	
-			return true;			
+			if(s.charAt(i)=='r'){
+								i++;	
+								if(s.charAt(i)=='u'){
+													i++;				
+													if(s.charAt(i)=='e'){
+																		i++;	
+																		return true;			
+													}
+								}
+			}
+		enumException e = enumException.Undefined_Symbol;
+		throw new customException(e,i);
 		}
+
 		if(s.charAt(i)=='f'){
-			i++;
-			if(s.charAt(i)!='a')
-				return false;
-			i++;
-			if(s.charAt(i)!='l')
-				return false;
-			i++;
-			if(s.charAt(i)!='s')
-				return false;
-			i++;
-			if(s.charAt(i)!='e')
-				return false;
-			i++;
-			return true;			
+							i++;
+							if(s.charAt(i)=='a'){
+												i++;
+												if(s.charAt(i)=='l'){
+																	i++;
+																	if(s.charAt(i)=='s'){
+																						i++;
+																						if(s.charAt(i)=='e'){
+																											i++;
+																										return true;			
+																						}
+																	}
+												}
+							}
 		}
-		return false;
+		enumException e = enumException.Undefined_Symbol;
+		throw new customException(e,i);		
 	}
 
-	boolean Null(){	
+	boolean Null() throws customException {	
 		if(s.charAt(i)=='n'){
 				i++;
-			if(s.charAt(i)!='u')
-				return false;
-			i++;	
-			if(s.charAt(i)!='l')
-				return false;
-			i++;				
-			if(s.charAt(i)!='l')
-				return false;
-			i++;	
-			return true;			
+				if(s.charAt(i)=='u'){
+									i++;	
+									if(s.charAt(i)=='l'){
+														i++;				
+														if(s.charAt(i)=='l'){
+																			i++;	
+																			return true;		
+														}
+									}
+				}	
 		}
-		return false;
+		enumException e = enumException.Undefined_Symbol;
+		throw new customException(e,i);
 	}
 
-	boolean Array(){
+	boolean Array()throws customException{
 		if(i<s.length() && s.charAt(i)=='['){
 			Match('[');
 			eliminateSpace();
@@ -185,10 +247,11 @@ class JsonParser{
 				if(Elements())
 					return Match(']');	
 		}
-		return false;
+		enumException e = enumException.Matching_Box_Bracket_Not_Found;
+		throw new customException(e,i);
 	}
 	
-	boolean Elements(){
+	boolean Elements()throws customException{
 		if(i<s.length() && Value()){
 			eliminateSpace();	
 			if(i<s.length() && s.charAt(i)==','){
@@ -203,7 +266,7 @@ class JsonParser{
 		return false;	
 	}
 
-	public void Validator(String s){
+	public void Validator(String s) throws customException{
 		i=0;
 		this.s=s;
 		boolean flag=false;
@@ -219,11 +282,17 @@ class JsonParser{
 			else if(i<s.length() && s.charAt(i)=='['){
 				if(Array())
 						flag=true;
-			}		
+			}
+			else{
+				enumException e1 = enumException.Starting_Bracket_Not_Found; 
+					throw new customException(e1, i);					
+			}
 			if(flag==true)
 				eliminateSpace();
-			if(i<s.length() || flag==false)
-				System.out.println("Not a Valid JSON Object");	
+			if(i<s.length() || flag==false){
+				enumException e = enumException.Unexpected_End_of_Line; 
+					throw new customException(e, i);	
+			}		
 			else 
 				System.out.println("Valid JSON Object");
 		}
@@ -236,12 +305,13 @@ class JsonMain{
 			JsonParser JP = new JsonParser();
 			BufferedReader br = null;
 			try{
-			br = new BufferedReader(new FileReader(args[0]));;
-			String input = br.readLine();
-			JP.Validator(input);
-			}catch(IOException e){
-				e.printStackTrace();	
-			}finally {
+				br = new BufferedReader(new FileReader(args[0]));;
+				String input = br.readLine();
+				JP.Validator(input);
+			}
+			catch (customException e){}
+			catch(IOException e){e.printStackTrace();}
+			finally {
 				if(br != null)
 					br.close();
 			}
